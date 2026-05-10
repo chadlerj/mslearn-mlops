@@ -56,9 +56,14 @@ jobs:
 
           SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
+          # Derive a region-unique endpoint name from the workspace's unique suffix
+          WS_SUFFIX=$(echo "$WS_NAME" | sed 's/mlw-ai300-l//')
+          ENDPOINT_NAME="diabetes-$(echo "$WS_SUFFIX" | cut -c1-16)"
+
           echo "resource_group=$RG_NAME" >> "$GITHUB_OUTPUT"
           echo "workspace=$WS_NAME" >> "$GITHUB_OUTPUT"
           echo "subscription_id=$SUBSCRIPTION_ID" >> "$GITHUB_OUTPUT"
+          echo "endpoint_name=$ENDPOINT_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Deploy model to managed online endpoint
         id: deploy
@@ -67,7 +72,7 @@ jobs:
             --subscription-id "${{ steps.detect.outputs.subscription_id }}" \
             --resource-group "${{ steps.detect.outputs.resource_group }}" \
             --workspace "${{ steps.detect.outputs.workspace }}" \
-            --endpoint-name "diabetes-endpoint" \
+            --endpoint-name "${{ steps.detect.outputs.endpoint_name }}" \
             --deployment-name "blue"
 
       - name: Comment deployment result on pull request

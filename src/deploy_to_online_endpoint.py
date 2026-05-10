@@ -4,7 +4,6 @@ from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment,
 from azure.ai.ml.constants import AssetTypes
 
 import argparse
-import datetime
 
 
 def parse_args():
@@ -34,11 +33,8 @@ def ensure_endpoint(ml_client: MLClient, endpoint_name: str) -> ManagedOnlineEnd
         endpoint = ml_client.online_endpoints.get(name=endpoint_name)
         return endpoint
     except Exception:
-        unique_suffix = datetime.datetime.now().strftime("%m%d%H%M%f")
-        name = endpoint_name or f"endpoint-{unique_suffix}"
-
         endpoint = ManagedOnlineEndpoint(
-            name=name,
+            name=endpoint_name,
             description="Online endpoint for MLflow diabetes model",
             auth_mode="key",
         )

@@ -41,9 +41,23 @@ jobs:
 
       - name: Register required resource providers
         run: |
-          az provider register --namespace Microsoft.MachineLearningServices --wait
-          az provider register --namespace Microsoft.ContainerRegistry --wait
-          az provider register --namespace Microsoft.ContainerInstance --wait
+          for ns in \
+            Microsoft.MachineLearningServices \
+            Microsoft.ContainerRegistry \
+            Microsoft.ContainerInstance \
+            Microsoft.OperationalInsights \
+            Microsoft.OperationsManagement \
+            Microsoft.Network \
+            Microsoft.Compute \
+            Microsoft.Storage \
+            Microsoft.KeyVault; do
+            STATE=$(az provider show --namespace "$ns" --query registrationState -o tsv 2>/dev/null || echo "Unknown")
+            echo "$ns: $STATE"
+            if [ "$STATE" != "Registered" ]; then
+              echo "  -> Registering $ns..."
+              az provider register --namespace "$ns" --wait || echo "  -> WARNING: could not register $ns (insufficient permissions?)"
+            fi
+          done
 
       - name: Detect Azure ML workspace
         id: detect
